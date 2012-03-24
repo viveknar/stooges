@@ -9,6 +9,17 @@ class SongEntity {
 		energy = 0.0F; tempo = 0.0F; danceability = 0.0F; duration = 0.0F;
 	}
 	
+	public SongEntity(String echoNestId, String artst, String ttl, float nrgy, float tmpo, float dncblty, float drtn)
+	{
+		id = echoNestId;
+		artist = artst;
+		title = ttl;
+		energy = nrgy;
+		tempo = tmpo;
+		danceability = dncblty;
+		duration = drtn;
+	}
+	
 	public String get_id() {
 		return id;
 	}
@@ -58,5 +69,6 @@ class SongEntity {
 	public void set_duration(float value) {
 		duration = value;
 	}
+
 	
 }
