@@ -32,7 +32,7 @@ public class MusicDbAdapter {
 			+ " (_id integer primary key autoincrement, name text not null, artist text, energy float, tempo float, danceability float, duration float, songid text not null);";
 	public static final String app_table = "appdata";
 	public static final String app_table_create_string = "create table " + app_table + " (numtracks integer);";
-	public static final String app_table_init_string = "insert into " + app_table + " values (numtracks = 0);";
+	public static final String app_table_init_string = "insert into " + app_table + " values (0);";
 	private MusicDbHelper musicDbHelper;
 	private Context mContext;
 	private SQLiteDatabase musicDatabase;
@@ -52,10 +52,19 @@ public class MusicDbAdapter {
 		public void onCreate(SQLiteDatabase db) {
 			// TODO create tables here
 			// create: playlist table, tracks table
+			try
+			{
+			db.beginTransaction();			
 			db.execSQL(playlist_table_create_string);
 			db.execSQL(tracks_table_create_string);
 			db.execSQL(app_table_create_string);
 			db.execSQL(app_table_init_string);
+			db.setTransactionSuccessful();
+			}
+			finally
+			{
+			db.endTransaction();
+			}
 		}
 
 		@Override
@@ -68,6 +77,11 @@ public class MusicDbAdapter {
 		musicDbHelper = new MusicDbHelper(mContext);
 		musicDatabase = musicDbHelper.getWritableDatabase();
 	}
+	
+	public void openReadOnly() {
+		musicDbHelper = new MusicDbHelper(mContext);
+		musicDatabase = musicDbHelper.getReadableDatabase();
+	}
 
 	public void close() {
 		musicDbHelper.close();
@@ -78,9 +92,16 @@ public class MusicDbAdapter {
 				playlist_table_namecol }, null, null, null, null, null);
 	}
 
+	public Cursor fetchSongs()
+	{
+		return musicDatabase.query(tracks_table, new String[] {
+				"_id", "name", "artist", "songid" }, null, null, null, null,
+				null);
+	}
+	
 	public SongEntity[] fetchAllSongs() {
 		Cursor songCursor = musicDatabase.query(tracks_table, new String[] {
-				"name", "artist", "energy", "tempo", "danceability",
+				"_id", "name", "artist", "energy", "tempo", "danceability",
 				"duration", "songid" }, null, null, null, null,
 				null);
 		
@@ -99,7 +120,7 @@ public class MusicDbAdapter {
 			song.set_duration(songCursor.getFloat(songCursor.getColumnIndex("duration")));
 			song.set_tempo(songCursor.getFloat(songCursor.getColumnIndex("tempo")));
 			song.set_id(songCursor.getString(songCursor.getColumnIndex("songid")));
-			listOfSongs.add(song);			
+			listOfSongs.add(song);
 			songCursor.moveToNext();
 		}
 		
@@ -132,13 +153,36 @@ public class MusicDbAdapter {
 		return appdataCursor.getInt(appdataCursor.getColumnIndex("numtracks"));
 	}
 	
+	public void setNumTracks(int num)
+	{
+		ContentValues cv = new ContentValues();
+		cv.put("numtracks", num);
+		try
+		{
+		musicDatabase.beginTransaction();		
+		musicDatabase.insert(app_table, null, cv);
+		musicDatabase.setTransactionSuccessful();		
+		}
+		finally
+		{ musicDatabase.endTransaction(); }
+	}
+	
 	public void deleteAllTrackInfo()
-	{ musicDatabase.delete(tracks_table, null, null); }
+	{
+		try
+		{
+		musicDatabase.beginTransaction();
+		musicDatabase.delete(tracks_table, null, null);
+		musicDatabase.setTransactionSuccessful();		
+		}
+		finally
+		{ musicDatabase.endTransaction(); }		
+	}
 	
 	public void addTrackInfo(SongEntity song)
 	{
-		if(song == null) //TODO: change so that boolean is returned or exception is raised
-		{ return; }
+		/*if(song == null) //TODO: change so that boolean is returned or exception is raised
+		{ return; }*/
 		ContentValues cv = new ContentValues();
 		cv.put("songid", song.get_id());
 		cv.put("artist", song.get_artist());
@@ -147,7 +191,14 @@ public class MusicDbAdapter {
 		cv.put("tempo", song.get_tempo());
 		cv.put("danceability", song.get_danceability());
 		cv.put("duration", song.get_duration());
+		try
+		{
+		musicDatabase.beginTransaction();		
 		musicDatabase.insert(tracks_table, null, cv);
+		musicDatabase.setTransactionSuccessful();		
+		}
+		finally
+		{ musicDatabase.endTransaction(); }
 	}
 	
 }
