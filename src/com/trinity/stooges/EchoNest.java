@@ -1,56 +1,100 @@
-package com.trinity.stooges;
 
-import java.util.List;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.*;
 
-
-
-import com.echonest.api.v4.*;
-import com.echonest.api.v4.PlaylistParams.PlaylistType;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 class EchoNest {
-	private EchoNestAPI en;
 	
-		public EchoNest() throws EchoNestException {
-			en = new EchoNestAPI("FQTGFAEJK1DLGZVAL");
-		    en.setTraceSends(false);
-		    en.setTraceRecvs(false);	
-		}
+	public static String ANALYZE_TRACK_URL = "http://developer.echonest.com/api/v4/track/profile?api_key=N6E4NIOVYMTHNDM8J&format=json&bucket=audio_summary&";
+	public static String SONG_SEARCH_URL = "http://developer.echonest.com/api/v4/song/search?api_key=N6E4NIOVYMTHNDM8J&format=json&results=3&bucket=id:7digital-US&bucket=audio_summary&bucket=tracks&";
+	public static String SIMILAR_SEARCH_URL = "http://developer.echonest.com/api/v4/song/search?api_key=N6E4NIOVYMTHNDM8J&format=json&results=1&";
 	
-		public SongEntity get_song_details(String artist, String title) throws EchoNestException {
-			SongParams params = new SongParams();
-			params.setArtist(artist);
-			params.setTitle(title);
-			params.setResults(1);
-			List<Song> songs = en.searchSongs(params);
-			return return_songs_features(songs);
-		}
+	private JSONObject return_response(String link) throws IOException, JSONException {
 		
-		public SongEntity get_similar_song(String description) throws EchoNestException {
-			PlaylistParams params = new PlaylistParams();
-			String[] keys = description.split(" ");
-			for (String key : keys) {
-				params.addDescription(key);
+		URL url = new URL(link);
+		InputStream in = url.openStream();
+		String response = "";
+		JSONObject jobj = null;
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+		for (String line; (line = reader.readLine()) != null;) {
+		    response += line;
+		}
+		in.close();
+		jobj = new JSONObject(response);
+		return jobj;
+		
+	}
+	
+	public SongEntity get_song_details(String artist, String title) throws IOException, JSONException {
+		@SuppressWarnings("deprecation")
+		String link = SONG_SEARCH_URL+"artist="+URLEncoder.encode(artist)+"&title="+URLEncoder.encode(title);
+		System.out.println(link);
+		JSONObject response = return_response(link);		
+		response = response.getJSONObject("response");
+		SongEntity song = new SongEntity();
+		JSONArray songs = response.getJSONArray("songs");
+		for (int i = 0;i < songs.length();i++) {
+			JSONObject c = songs.getJSONObject(i);
+			song.set_artist(c.getString("artist_name"));
+			song.set_title(c.getString("title"));
+			try {
+				JSONArray tracks = c.getJSONArray("tracks");
+				song.set_id(tracks.getJSONObject(0).getString("id"));
+			} catch (JSONException e) {
+				// TODO: handle exception
 			}
-			params.setType(PlaylistType.ARTIST_DESCRIPTION);
-			params.setResults(1);
-			Playlist playlist = en.createStaticPlaylist(params);
-			List<Song> songs = playlist.getSongs();
-			return return_songs_features(songs);
+		}
+		song = get_metadata(song);
+		return song;
+	}
+	
+	private SongEntity get_metadata(SongEntity song) throws IOException, JSONException {
+		@SuppressWarnings("deprecation")
+		String link = ANALYZE_TRACK_URL+"id="+URLEncoder.encode(song.get_id());
+		System.out.println(link);
+		JSONObject response = return_response(link);
+		response = response.getJSONObject("response");
+		song.set_danceability(new Float(response.getJSONObject("track").getJSONObject("audio_summary").getLong("danceability")));
+		song.set_duration(new Float(response.getJSONObject("track").getJSONObject("audio_summary").getLong("duration")));
+		song.set_energy(new Float(response.getJSONObject("track").getJSONObject("audio_summary").getLong("energy")));
+		song.set_tempo(new Float(response.getJSONObject("track").getJSONObject("audio_summary").getLong("tempo")));
+		return song;
+	}
+	
+	@SuppressWarnings("deprecation")
+	public SongEntity get_similar_song(String description) throws IOException, JSONException {
+		String[] words = description.split(" ");
+		String params = "";
+		for (String word : words) {
+			word = word.replaceAll("[!@#$%^&*()-_,.]", "");
+			params += "description="+URLEncoder.encode(word)+"&";
 		}
 		
-		
-		
-		private SongEntity return_songs_features(List<Song> songs) throws EchoNestException {
-			SongEntity s = new SongEntity();
-			for (Song song : songs) {
-				s.set_artist(song.getArtistName());
-				s.set_id(song.getID());
-				s.set_title(song.getTitle());
-				s.set_energy((float)song.getEnergy());
-				s.set_tempo((float) song.getTempo());
-				s.set_danceability((float) song.getDanceability());
-				s.set_duration((float) song.getDuration());
+		String link = SONG_SEARCH_URL+params;
+		System.out.println(link);
+		JSONObject response = return_response(link);
+		response = response.getJSONObject("response");
+		SongEntity song = new SongEntity();
+		JSONArray songs = response.getJSONArray("songs");
+		for (int i = 0;i < songs.length();i++) {
+			JSONObject c = songs.getJSONObject(i);
+			song.set_artist(c.getString("artist_name"));
+			song.set_title(c.getString("title"));
+			try {
+				JSONArray tracks = c.getJSONArray("tracks");
+				song.set_id(tracks.getJSONObject(0).getString("id"));
+			} catch (JSONException e) {
+				// TODO: handle exception
 			}
-			return s;
 		}
+		song = get_metadata(song);
+		return song;
+		
+	}
 }
