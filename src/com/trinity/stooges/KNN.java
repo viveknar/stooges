@@ -7,20 +7,21 @@ import java.util.TreeMap;
 class KNN {
 	
 	public ArrayList<String> closestNeighbour(SongEntity seed_song, SongEntity[] songs, int number) {
-	    HashMap<String,Double> map = new HashMap<String,Double>();
+	    HashMap<String,Float> map = new HashMap<String,Float>();
 	    ValueComparator bvc =  new ValueComparator(map);
-	    TreeMap<String,Double> sorted_map = new TreeMap<String, Double>(bvc);
+	    TreeMap<String,Float> sorted_map = new TreeMap<String, Float>(bvc);
 		ArrayList<String> distances = new ArrayList<String>();
 		for (int i = 0; i < songs.length; i++) {
-			 map.put(songs[i].get_id(), (double) computeDistance(seed_song, songs[i]));
+			 map.put(songs[i].get_id(), (float) computeDistance(seed_song, songs[i]));
 		}
 		sorted_map.putAll(map);
-		sorted_map.descendingMap();
+//		sorted_map.descendingMap();
 		int count = 0;
 		for (String key :sorted_map.keySet()) {
-			if(count != number) {
+			if(count >= (songs.length - number)) {
 				distances.add(key);
 			}
+			count++;
 		}
 		return distances;
 	}

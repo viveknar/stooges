@@ -5,16 +5,16 @@ import java.util.Map;
 
 public class ValueComparator implements Comparator<Object> {
 
-	  Map<String, Double> base;
-	  public ValueComparator(Map<String, Double> base) {
+	  Map<String, Float> base;
+	  public ValueComparator(Map<String, Float> base) {
 	      this.base = base;
 	  }
 
 	  public int compare(Object a, Object b) {
-		  if((Double)base.get(a) < (Double)base.get(b)) {
+		  if((Float)base.get(a) < (Float)base.get(b)) {
 			  return 1;
 		  } 
-		  else if((Double)base.get(a) == (Double)base.get(b)) {
+		  else if((Float)base.get(a) == (Float)base.get(b)) {
 			  return 0;
 		  } 
 		  else {
