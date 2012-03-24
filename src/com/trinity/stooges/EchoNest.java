@@ -1,3 +1,4 @@
+package com.trinity.stooges;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -49,12 +50,14 @@ class EchoNest {
 			} catch (JSONException e) {
 				// TODO: handle exception
 			}
-		}
+		}		
 		song = get_metadata(song);
 		return song;
 	}
 	
-	private SongEntity get_metadata(SongEntity song) throws IOException, JSONException {
+	private SongEntity get_metadata(SongEntity song) throws IOException, JSONException {		
+		if(song.get_id()!="")
+		{
 		@SuppressWarnings("deprecation")
 		String link = ANALYZE_TRACK_URL+"id="+URLEncoder.encode(song.get_id());
 		System.out.println(link);
@@ -64,6 +67,7 @@ class EchoNest {
 		song.set_duration(new Float(response.getJSONObject("track").getJSONObject("audio_summary").getLong("duration")));
 		song.set_energy(new Float(response.getJSONObject("track").getJSONObject("audio_summary").getLong("energy")));
 		song.set_tempo(new Float(response.getJSONObject("track").getJSONObject("audio_summary").getLong("tempo")));
+		}
 		return song;
 	}
 	

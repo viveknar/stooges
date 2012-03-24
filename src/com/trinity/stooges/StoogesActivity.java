@@ -1,5 +1,10 @@
 package com.trinity.stooges;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
+import org.json.JSONException;
+
 import android.app.ListActivity;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -105,7 +110,7 @@ public class StoogesActivity extends ListActivity {
 									.getColumnIndex(android.provider.MediaStore.MediaColumns.TITLE));
 					
 					try {
-						if((artist != null) && (!artist.toLowerCase().contains("unknown")))
+						//if((artist != null) && (!artist.toLowerCase().contains("unknown")))
 						songinfo = echonestHelper.get_song_details(artist,
 								title);
 					} catch (Exception e) {
@@ -141,7 +146,12 @@ public class StoogesActivity extends ListActivity {
 	        	Toast.makeText(this, numTracksInDevice + "", Toast.LENGTH_SHORT).show();  
 	            Intent intent = new Intent(this, testactivity.class);
 	            startActivity(intent);
-	            return true;	        
+	            return true;
+	            
+	        case R.id.add_playlist_menu:
+	        	Intent intent1 = new Intent(this, UserInputActivity.class);
+	            startActivityForResult(intent1, 7);
+	        	return true;
 	        default:
 	            return super.onOptionsItemSelected(item);
 	    }
@@ -152,5 +162,33 @@ public class StoogesActivity extends ListActivity {
 	{
 		super.onDestroy();
 		//databaseHelper.close();
+	}
+	
+
+	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		if(resultCode == RESULT_CANCELED)
+		{ return; }
+		
+		if(requestCode == 7)
+		{
+			String playlistname = data.getStringExtra("playlistname");
+			int numsongs = data.getIntExtra("numsongs", 1);
+			SongEntity e1 = new SongEntity();
+			
+			try {
+				e1 = echonestHelper.get_similar_song(playlistname);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();				
+			}
+			KNN k = new KNN();
+			ArrayList<String> echnestids = k.closestNeighbour(e1, databaseHelper.fetchAllSongs(), numsongs);
+			
+		}
+		
 	}
 }
