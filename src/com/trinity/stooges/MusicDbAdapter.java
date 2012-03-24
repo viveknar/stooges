@@ -81,8 +81,7 @@ public class MusicDbAdapter {
 		
 		songCursor.moveToFirst();
 		SongEntity song;
-		//int clmnIndcs[] = new int[] {songCursor.getColumnIndex("songid"),  };		
-		//songCursor.
+		
 		while(! songCursor.isAfterLast())
 		{			
 			song = new SongEntity();
@@ -118,6 +117,7 @@ public class MusicDbAdapter {
 		song.set_id(songCursor.getString(songCursor.getColumnIndex("songid")));
 		return song;
 	}
+	
 	
 	
 }
