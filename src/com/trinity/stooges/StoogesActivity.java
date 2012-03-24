@@ -1,9 +1,9 @@
 package com.trinity.stooges;
 
-import android.app.Activity;
+import android.app.ListActivity;
 import android.os.Bundle;
 
-public class StoogesActivity extends Activity {
+public class StoogesActivity extends ListActivity {
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
