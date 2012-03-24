@@ -4,5 +4,6 @@
     <string name="hello">Hello World, StoogesActivity!</string>
     <string name="app_name">Stooges</string>
     <string name="no_playlists">There are no playlists right now.</string>
-
+	<string name="add_plylst">New playlist</string>
+	
 </resources>

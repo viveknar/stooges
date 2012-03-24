@@ -1,12 +1,12 @@
 package com.trinity.stooges;
 
-import com.echonest.api.v4.EchoNestException;
-
 import android.app.ListActivity;
 import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.widget.SimpleCursorAdapter;
 
 public class StoogesActivity extends ListActivity {
@@ -79,5 +79,12 @@ public class StoogesActivity extends ListActivity {
 				R.layout.listrow, playlist_list_cursor, from, to);
 		setListAdapter(playlistAdapter);
 	}
-
+	
+	public boolean onCreateOptionsMenu(Menu menu)
+	{
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.mainactvty_menu, menu);
+		return true;
+	}
+	
 }
