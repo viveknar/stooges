@@ -2,6 +2,7 @@ package com.trinity.stooges;
 
 import java.util.ArrayList;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -29,9 +30,13 @@ public class MusicDbAdapter {
 	public static final String tracks_table_create_string = "create table "
 			+ tracks_table
 			+ " (_id integer primary key autoincrement, name text not null, artist text, energy float, tempo float, danceability float, duration float, songid text not null);";
+	public static final String app_table = "appdata";
+	public static final String app_table_create_string = "create table " + app_table + " (numtracks integer);";
+	public static final String app_table_init_string = "insert into " + app_table + " values (numtracks = 0);";
 	private MusicDbHelper musicDbHelper;
 	private Context mContext;
 	private SQLiteDatabase musicDatabase;
+	
 
 	public MusicDbAdapter(Context context) {
 		mContext = context;
@@ -49,6 +54,8 @@ public class MusicDbAdapter {
 			// create: playlist table, tracks table
 			db.execSQL(playlist_table_create_string);
 			db.execSQL(tracks_table_create_string);
+			db.execSQL(app_table_create_string);
+			db.execSQL(app_table_init_string);
 		}
 
 		@Override
@@ -118,6 +125,29 @@ public class MusicDbAdapter {
 		return song;
 	}
 	
+	public int getNumTracks()
+	{
+		Cursor appdataCursor = musicDatabase.query(app_table, null, null, null, null, null, null);
+		appdataCursor.moveToFirst();
+		return appdataCursor.getInt(appdataCursor.getColumnIndex("numtracks"));
+	}
 	
+	public void deleteAllTrackInfo()
+	{ musicDatabase.delete(tracks_table, null, null); }
+	
+	public void addTrackInfo(SongEntity song)
+	{
+		if(song == null) //TODO: change so that boolean is returned or exception is raised
+		{ return; }
+		ContentValues cv = new ContentValues();
+		cv.put("songid", song.get_id());
+		cv.put("artist", song.get_artist());
+		cv.put("name", song.get_title());
+		cv.put("energy", song.get_energy());
+		cv.put("tempo", song.get_tempo());
+		cv.put("danceability", song.get_danceability());
+		cv.put("duration", song.get_duration());
+		musicDatabase.insert(tracks_table, null, cv);
+	}
 	
 }
