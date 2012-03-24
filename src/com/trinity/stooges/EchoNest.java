@@ -1,10 +1,8 @@
 package com.trinity.stooges;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import javax.management.Descriptor;
+
 
 import com.echonest.api.v4.*;
 import com.echonest.api.v4.PlaylistParams.PlaylistType;
@@ -46,6 +44,7 @@ class EchoNest {
 			SongEntity s = new SongEntity();
 			for (Song song : songs) {
 				s.set_artist(song.getArtistName());
+				s.set_id(song.getID());
 				s.set_title(song.getTitle());
 				s.set_energy((float)song.getEnergy());
 				s.set_tempo((float) song.getTempo());

@@ -1,8 +1,15 @@
 package com.trinity.stooges;
 
 class SongEntity {
-	String artist, title;
+	String Id, artist, title;
 	float energy, tempo, danceability, duration;
+	
+	public String get_id() {
+		return Id;
+	}
+	public void set_id(String name) {
+		Id = name;
+	}
 	
 	public String get_artist() {
 		return artist;
